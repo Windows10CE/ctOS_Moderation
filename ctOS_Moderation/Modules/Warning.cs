@@ -19,7 +19,7 @@ namespace ctOS_Moderation.Modules
             EmbedBuilder builder = new EmbedBuilder();
 
             builder
-                .AddInlineField("warn show [user mention]", "Shows the warnings of a user.")
+                .AddInlineField("warn show [user mention] (page number)", "Shows the warnings of a user.")
                 .AddInlineField("warn add [user mention] [warning text]", "Adds a warning to the user. Requires a role called \"ctOS Warnings\"")
                 .WithColor(Color.Blue);
 
@@ -34,7 +34,7 @@ namespace ctOS_Moderation.Modules
                 string userID = userToWarn.Id.ToString();
                 string warningsDir = @"c:\Users\aaron\Documents\Moderation\";
                 string userWarningsFile = warningsDir + userID + @".json";
-                string usernameOfWarned = $"@{userToWarn.Username}#{userToWarn.Discriminator}";
+                string usernameOfWarned = $"{userToWarn.Username}#{userToWarn.Discriminator}";
 
                 JObject warningObj = new JObject(
                     new JProperty("Warning Location", $"{Context.Guild.Name} in channel #{Context.Channel.Name}"),
@@ -62,7 +62,7 @@ namespace ctOS_Moderation.Modules
             }
         }
         [Command("show")]
-        public async Task ShowWarningsAsync(SocketGuildUser userToCheck) {
+        public async Task ShowWarningsAsync(SocketGuildUser userToCheck, int pageNumber = 1) {
             var user = Context.User as SocketGuildUser;
             var role = Context.Guild.Roles.FirstOrDefault(x => x.Name == "ctOS Warnings");
             if (user.Roles.Contains(role)) {
@@ -72,16 +72,30 @@ namespace ctOS_Moderation.Modules
                     List<JObject> warnings = GetJSONObjects(filename);
                     EmbedBuilder warningsToDisplay = new EmbedBuilder();
 
+                    int warningListStart = (5 * pageNumber) - 5;
+                    int warningListEnd = warningListStart + 4;
+                    double numOfPagesDouble = (double)warnings.Count / 5.0;
+                    int numOfPages = (int)Math.Round(numOfPagesDouble + 0.5, 0);
                     int numOfWarnings = 0;
-                    foreach (JObject JObj in warnings) {
-                        numOfWarnings++;
-                        warningsToDisplay
-                            .AddField($"Warning {numOfWarnings.ToString()}:", GetJObjectValue(JObj, "Warning"))
-                            .AddInlineField("Given By:", GetJObjectValue(JObj, "Given By"))
-                            .AddInlineField("Given In:", GetJObjectValue(JObj, "Warning Location"));
-                    }
+                    int numOfWarningsShown = 0;
+                    
+                    if (pageNumber != 0 && !(pageNumber > numOfPages) || pageNumber == 1) {
+                        if (numOfPages == 0) numOfPages = 1;
+                        foreach (JObject JObj in warnings) {
+                            numOfWarnings++;
+                            if (warnings.IndexOf(JObj) >= warningListStart && warnings.IndexOf(JObj) <= warningListEnd) {
+                                numOfWarningsShown++;
+                                warningsToDisplay
+                                .AddField($"Warning {numOfWarningsShown + warningListStart}:", GetJObjectValue(JObj, "Warning"))
+                                .AddInlineField("Given By:", GetJObjectValue(JObj, "Given By"))
+                                .AddInlineField("Given In:", GetJObjectValue(JObj, "Warning Location"));
+                            }
+                        }
 
-                    await ReplyAsync($"User @{userToCheck.Username}#{userToCheck.Discriminator} has {numOfWarnings.ToString()} warning(s).", false, warningsToDisplay.WithColor(Color.DarkRed).Build());
+                        await ReplyAsync($"User @{userToCheck.Username}#{userToCheck.Discriminator} has {warnings.Count} warning(s).\nThere are {numOfPages} page(s).", false, warningsToDisplay.WithColor(Color.DarkRed).Build());
+                    } else {
+                        await ReplyAsync("Invalid page number.");
+                    }
                 } else {
                     await ReplyAsync($"{userToCheck.Username}#{userToCheck.Discriminator} has no warnings.");
                 }
