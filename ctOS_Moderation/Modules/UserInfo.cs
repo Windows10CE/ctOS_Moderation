@@ -1,19 +1,26 @@
 ﻿using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 using System;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace ctOS_Moderation.Modules {
     public class UserInfo : ModuleBase<SocketCommandContext> {
         [Command("userinfo")]
-        public async Task GetUserInfoAsync(SocketGuildUser user) {
+        public async Task GetUserInfoAsync(IGuildUser user) {
             EmbedBuilder builder = new EmbedBuilder();
 
             StringBuilder stringbuilder = new StringBuilder();
-            user.Roles.Select(async x => stringbuilder.Append(await TestStringForNullOrEmpty(x.Name)));
+            foreach (var id in user.RoleIds)
+                foreach (var role in Context.Guild.Roles)
+                    if (id == role.Id)
+                        if (role.Name != "@everyone") {
+                            if (stringbuilder.ToString() == String.Empty || stringbuilder.ToString() == null)
+                                stringbuilder.Append(role.Name);
+                            else
+                                stringbuilder.Append(", " + role.Name);
+                        }
+                                
             if (stringbuilder.ToString() == String.Empty || stringbuilder.ToString() == null)
                 stringbuilder.Append("This user has no roles.");
 
@@ -29,7 +36,7 @@ namespace ctOS_Moderation.Modules {
 
             await ReplyAsync("", false, builder.Build());
         }
-        public async Task<string> TestStringForNullOrEmpty(string stringToTest) {
+        public string TestStringForNullOrEmpty(string stringToTest) {
             if (stringToTest != null && stringToTest != String.Empty)
                 return stringToTest;
             else
