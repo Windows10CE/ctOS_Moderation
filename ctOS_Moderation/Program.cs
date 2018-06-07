@@ -44,6 +44,8 @@ namespace ctOS_Moderation
 
             await _client.StartAsync();
 
+            await _client.SetGameAsync("cm.help");
+
             await Task.Delay(3000);
             Console.WriteLine("");
 
