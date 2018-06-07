@@ -1,16 +1,12 @@
-﻿using System.Collections.Generic;
-using System.Text;
-using Discord;
+﻿using Discord;
 using Discord.Commands;
 using Discord.WebSocket;
 using Newtonsoft.Json.Linq;
 using System.IO;
 using System.Threading.Tasks;
 using System.Linq;
-using static ctOS_Moderation.Modules.JSONHelper;
 
-namespace ctOS_Moderation.Modules
-{
+namespace ctOS_Moderation.Modules {
     public class Warn : ModuleBase<SocketCommandContext>
     {
         [Command("warn")]
