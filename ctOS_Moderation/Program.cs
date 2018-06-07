@@ -11,7 +11,15 @@ namespace ctOS_Moderation
 {
     class Program
     {
-        static void Main(string[] args) => new Program().RunBotAsync().GetAwaiter().GetResult();
+        static void Main(string[] args) {
+            if (!Directory.Exists(StaticValues.WarningsDir)) {
+                if (!Directory.Exists(StaticValues.CTOSModDir))
+                    Directory.CreateDirectory(StaticValues.CTOSModDir);
+                Directory.CreateDirectory(StaticValues.WarningsDir);
+            }
+
+            new Program().RunBotAsync().GetAwaiter().GetResult();
+        }
 
         private DiscordSocketClient _client;
         private CommandService _commands;
@@ -26,7 +34,7 @@ namespace ctOS_Moderation
                 .AddSingleton(_commands)
                 .BuildServiceProvider();
 
-            string botToken = File.ReadAllText("Token");
+            string botToken = File.ReadAllText(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "Token"));
 
             _client.Log += Log;
 
@@ -55,19 +63,19 @@ namespace ctOS_Moderation
         }
 
         public async Task HandleCommandAsync(SocketMessage s) {
-            var message = s as SocketUserMessage;
+            SocketUserMessage message = s as SocketUserMessage;
             if (message == null || message.Author.IsBot) return;
 
             int argPos = 0;
-
-            if (message.HasStringPrefix("cm.", ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos)) {
+            if ((message.HasStringPrefix("cm.", ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos) && !(new SocketCommandContext(_client, message).IsPrivate))) {
                 var context = new SocketCommandContext(_client, message);
 
                 var result = await _commands.ExecuteAsync(context, argPos, _service);
 
-                if (!result.IsSuccess && result.Error != CommandError.UnknownCommand) {
-                    Console.WriteLine(result.ErrorReason);
-                    Console.WriteLine("");
+                if (!result.IsSuccess) {
+                    await context.Channel.SendMessageAsync(result.ErrorReason);
+                    if (result.Error != CommandError.UnknownCommand && result.Error != CommandError.BadArgCount && result.Error != CommandError.ObjectNotFound)
+                        Console.WriteLine(result.ErrorReason + "\n");
                 }
             }
         }
