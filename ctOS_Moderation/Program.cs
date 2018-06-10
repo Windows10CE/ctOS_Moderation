@@ -13,10 +13,13 @@ namespace ctOS_Moderation
     {
         static void Main(string[] args) {
             if (!Directory.Exists(StaticValues.WarningsDir)) {
-                if (!Directory.Exists(StaticValues.CTOSModDir))
+                if (!Directory.Exists(StaticValues.CTOSModDir)) {
                     Directory.CreateDirectory(StaticValues.CTOSModDir);
+                }
                 Directory.CreateDirectory(StaticValues.WarningsDir);
             }
+            if (!Directory.Exists(StaticValues.ServerSettingsDir))
+                Directory.CreateDirectory(StaticValues.ServerSettingsDir);
 
             new Program().RunBotAsync().GetAwaiter().GetResult();
         }
@@ -69,10 +72,16 @@ namespace ctOS_Moderation
             if (message == null || message.Author.IsBot) return;
 
             int argPos = 0;
-            if ((message.HasStringPrefix("cm.", ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos) && !(new SocketCommandContext(_client, message).IsPrivate))) {
+            if ((message.HasStringPrefix(StaticValues.GetServerPrefix(new SocketCommandContext(_client, message).Guild.Id), ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.ToString() == "cm.prefix") && !(new SocketCommandContext(_client, message).IsPrivate)) {
                 var context = new SocketCommandContext(_client, message);
+                IResult result;
 
-                var result = await _commands.ExecuteAsync(context, argPos, _service);
+                if (message.ToString() == "cm.prefix" && message.HasStringPrefix("cm.", ref argPos))
+                    result = await _commands.ExecuteAsync(context, argPos, _service);
+                else
+                    result = await _commands.ExecuteAsync(context, argPos, _service);
+
+
 
                 if (!result.IsSuccess) {
                     await context.Channel.SendMessageAsync(result.ErrorReason);
