@@ -50,7 +50,7 @@ namespace ctOS_Moderation.Modules {
             foreach (EmbedItem item in embedItems)
                 builder.AddField(item.EmbedTitle, item.EmbedContent);
 
-            await ReplyAsync("in dev", false, builder.Build());
+            await ReplyAsync("", false, builder.Build());
         }
         public class EmbedItem {
             public string EmbedTitle;

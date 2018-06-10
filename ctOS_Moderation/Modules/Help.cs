@@ -21,7 +21,7 @@ namespace ctOS_Moderation.Modules {
                 .AddInlineField("delete [user mention] [warning # or \"all\"]", "Deletes a warning message from the user. Requires a role called \"ctOS Warnings\" or the Manage Messages permission. Warning: This command will only delete warnings given in the server you send this command in.")
                 .WithColor(Color.DarkBlue);
 
-            await ReplyAsync("", false, builder.Build());
+            await Context.User.SendMessageAsync("", false, builder.Build());
         }
     }
 }
