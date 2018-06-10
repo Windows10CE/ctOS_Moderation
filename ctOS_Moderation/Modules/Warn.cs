@@ -41,7 +41,7 @@ namespace ctOS_Moderation.Modules {
                 var userToDM = userToWarn as IUser;
                 await UserExtensions.SendMessageAsync(userToDM, "You have been warned.", false, builderDM.Build());
             } else {
-                await ReplyAsync("You don't have the needed role. (ctOS Warnings)");
+                await ReplyAsync("You don't have the needed role(ctOS Warnings) or the Manage Messages permission.");
             }
         }
     }

@@ -49,7 +49,8 @@ namespace ctOS_Moderation.Modules {
                 } else {
                     await ReplyAsync($"{userToCheck.Username}#{userToCheck.Discriminator} has no warnings.");
                 }
-            }
+            } else
+                await ReplyAsync("You don't have the needed role(ctOS Warnings) or the Manage Messages permission.");
         }
     }
 }

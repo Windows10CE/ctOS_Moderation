@@ -16,7 +16,7 @@ namespace ctOS_Moderation.Modules {
             var role = Context.Guild.Roles.FirstOrDefault(x => x.Name == "ctOS Warnings");
 
             if (!user.Roles.Contains(role) && !user.GuildPermissions.ManageMessages) {
-                await ReplyAsync("You do not have the required permissions!");
+                await ReplyAsync("You don't have the needed role(ctOS Warnings) or the Manage Messages permission.");
                 return;
             }
 
@@ -25,7 +25,7 @@ namespace ctOS_Moderation.Modules {
                 await ReplyAsync("The user does not have any warnings to remove!");
                 return;
             }
-            if (!int.TryParse(warningNumber, out int a) && warningNumber.ToLower() != "all") {
+            if (!int.TryParse(warningNumber, out int warningNumberInt) && warningNumber.ToLower() != "all") {
                 await ReplyAsync("Please give a proper warning number, or the \"all\" variable!");
                 return;
             }
@@ -52,7 +52,6 @@ namespace ctOS_Moderation.Modules {
                     jObjs.Remove(warning.Object);
                 warningIsServerWarn = true;
             } else {
-                int warningNumberInt = int.Parse(warningNumber);
                 foreach (WarningObj warning in serverWarns) {
                     if (warningNumberInt == warning.WarningNumber) {
                         jObjs.Remove(warning.Object);
