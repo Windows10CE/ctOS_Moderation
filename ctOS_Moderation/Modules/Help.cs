@@ -13,7 +13,7 @@ namespace ctOS_Moderation.Modules {
                 .AddField("help", "This help menu!")
                 .AddField("ping", "Pong!")
                 .AddField("prefix", "Get or set the prefix of the server. Requires the Manage Server permission to change the prefix.")
-                .AddField("clear [number of messages to clear]", "Clears the specified amount of messgaes, not including the message used to invoke this command.")
+                .AddField("clear (who's messages to delete) [number of messages to clear]", "Clears the specified amount of messgaes, not including the message used to invoke this command. The user option allows you to only delete messages from that user.")
                 .AddField("kick [user mention]", "Kicks the mentioned user.")
                 .AddField("ban [user mention] (days to prune) (reason)", "Bans the user with a reason(optional), and deletes their messages over the past however many days(optional).")
                 .AddField("userinfo [user mention]", "Returns a chunk of the mentioned useres info related to Discord and the server you're in.")
