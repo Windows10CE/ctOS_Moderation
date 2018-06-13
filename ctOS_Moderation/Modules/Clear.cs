@@ -19,7 +19,7 @@ namespace ctOS_Moderation.Modules {
         }
         [Command]
         public async Task ClearUserMessagesAsync(IGuildUser user, int numOfMessages) {
-            var messages = await Context.Channel.GetMessagesAsync(numOfMessages).Flatten();
+            var messages = await Context.Channel.GetMessagesAsync(numOfMessages + 1).Flatten();
             List<IMessage> userMessages = new List<IMessage>();
             foreach (IMessage message in messages)
                 if (message.Author.Id == user.Id)

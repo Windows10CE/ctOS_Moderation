@@ -1,25 +1,17 @@
-﻿using Discord.Commands;
+﻿using ctOS_Moderation.Modules.Preconditions;
+using Discord.Commands;
 using Discord.WebSocket;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using static ctOS_Moderation.Modules.JSONHelper;
 
 namespace ctOS_Moderation.Modules {
     public class Delete : ModuleBase<SocketCommandContext> {
-        [Command("delete")]
+        [Command("delete"), RequireManageMessagesOrRole]
         public async Task RemoveWarningAsync(SocketGuildUser userToRemove, string warningNumber) {
-            var user = Context.User as SocketGuildUser;
-            var role = Context.Guild.Roles.FirstOrDefault(x => x.Name == "ctOS Warnings");
-
-            if (!user.Roles.Contains(role) && !user.GuildPermissions.ManageMessages) {
-                await ReplyAsync("You don't have the needed role(ctOS Warnings) or the Manage Messages permission.");
-                return;
-            }
-
             string filename = Path.Combine(StaticValues.WarningsDir, userToRemove.Id + ".json");
             if (!File.Exists(filename)) {
                 await ReplyAsync("The user does not have any warnings to remove!");

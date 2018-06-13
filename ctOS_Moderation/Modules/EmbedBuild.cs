@@ -6,13 +6,8 @@ using System.Threading.Tasks;
 
 namespace ctOS_Moderation.Modules {
     public class EmbedBuild : ModuleBase<SocketCommandContext> {
-        [Command("embedbuild")]
+        [Command("embedbuild"), RequireUserPermission(GuildPermission.ManageMessages)]
         public async Task EmbedBuildAsync([Remainder]string args) {
-            if (!(Context.User as IGuildUser).GuildPermissions.ManageMessages) {
-                await ReplyAsync("You must have the Manage Messages permission!");
-                return;
-            }
-
             EmbedBuilder builder = new EmbedBuilder();
 
             List<EmbedItem> embedItems = new List<EmbedItem>();
