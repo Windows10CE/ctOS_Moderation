@@ -26,6 +26,7 @@ namespace ctOS_Moderation.Modules {
 
             builder
                 .AddField("User Info", $"User info for {user.Mention}")
+                .WithThumbnailUrl((user as IUser).GetAvatarUrl())
                 .AddInlineField("Username and Discrim", $"{user.Username}#{user.Discriminator}")
                 .AddInlineField("Created on", user.CreatedAt)
                 .AddInlineField("Joined on", user.JoinedAt)
