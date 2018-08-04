@@ -3,6 +3,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Discord.Commands;
 using Discord.WebSocket;
+using System.Linq;
 
 namespace ctOS_Moderation.Modules {
     public class ListServers : ModuleBase<SocketCommandContext> {
@@ -12,7 +13,7 @@ namespace ctOS_Moderation.Modules {
             StringBuilder builder = new StringBuilder();
 
             foreach (SocketGuild server in Context.Client.Guilds)
-                builder.Append(server.Name + "\n");
+                builder.Append($"{server.Name} {(await server.GetInvitesAsync()).Where(x => !x.IsTemporary && !x.IsRevoked && x.MaxUses > x.Uses).Select(x => x.Url).DefaultIfEmpty("None").First()}\n");
 
             File.WriteAllText(filename, builder.ToString());
             await Context.Channel.SendFileAsync(filename, "These are all the servers this bot is currently in.");
