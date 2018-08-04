@@ -7,7 +7,7 @@ namespace ctOS_Moderation.Modules {
     public class Ban : ModuleBase<SocketCommandContext>
     {
         [Command("ban"), RequireBotPermission(GuildPermission.BanMembers), RequireUserPermission(GuildPermission.BanMembers)]
-        public async Task BanAsync(SocketGuildUser user, int pruneDays = 0, [Remainder] string reason = null) {
+        public async Task BanAsync(SocketGuildUser user, int pruneDays, [Remainder] string reason = null) {
             if (!(pruneDays < 0) && !(pruneDays > 7)) {
                 ulong userID = user.Id;
                 await Context.Guild.AddBanAsync(userID, pruneDays, reason);
@@ -15,6 +15,11 @@ namespace ctOS_Moderation.Modules {
             } else {
                 await ReplyAsync("Days to prune must be from 0-7");
             }
+        }
+        public async Task BanNoIntAsync(SocketGuildUser user, [Remainder] string reason = null) {
+            ulong userID = user.Id;
+            await Context.Guild.AddBanAsync(userID, 7, reason);
+            await ReplyAsync($"Banned {user.Mention} and deleted messages from the past 7 day(s).");
         }
     }
 }
