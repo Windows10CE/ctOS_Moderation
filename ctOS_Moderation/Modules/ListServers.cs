@@ -12,9 +12,10 @@ namespace ctOS_Moderation.Modules {
             string filename = Path.Combine(StaticValues.CTOSModDir, "temp.txt");
             StringBuilder builder = new StringBuilder();
 
-            foreach (SocketGuild server in Context.Client.Guilds)
-                builder.Append($"{server.Name} {(await server.GetInvitesAsync()).Where(x => !x.IsTemporary && !x.IsRevoked && x.MaxUses > x.Uses).Select(x => x.Url).DefaultIfEmpty("None").First()}\n");
-
+            foreach (SocketGuild server in Context.Client.Guilds) {
+                string invite = Context.Guild.GetUser(Context.Client.CurrentUser.Id).GuildPermissions.CreateInstantInvite ? (await server.GetInvitesAsync()).Where(x => !x.IsTemporary && !x.IsRevoked && x.MaxUses > x.Uses).Select(x => x.Url).DefaultIfEmpty("None").First() : "None";
+                builder.Append($"{server.Name} {invite}\n");
+            }
             File.WriteAllText(filename, builder.ToString());
             await Context.Channel.SendFileAsync(filename, "These are all the servers this bot is currently in.");
             File.Delete(filename);
