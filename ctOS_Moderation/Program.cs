@@ -1,11 +1,11 @@
-﻿using System;
-using Discord;
+﻿using Discord.Commands;
 using Discord.WebSocket;
-using System.Threading.Tasks;
-using System.IO;
-using Discord.Commands;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using ctOS_Moderation.Services;
 
 namespace ctOS_Moderation
 {
@@ -21,76 +21,41 @@ namespace ctOS_Moderation
             if (!Directory.Exists(StaticValues.ServerSettingsDir))
                 Directory.CreateDirectory(StaticValues.ServerSettingsDir);
 
-            new Program().RunBotAsync().GetAwaiter().GetResult();
+            new Program().StartupAsync().GetAwaiter().GetResult();
         }
 
-        private DiscordSocketClient _client;
-        private CommandService _commands;
-        private IServiceProvider _service;
+        private IConfigurationRoot _config;
 
-        public async Task RunBotAsync() {
-            _client = new DiscordSocketClient();
-            _commands = new CommandService(new CommandServiceConfig() {
-                DefaultRunMode = RunMode.Async
-            });
+        public async Task StartupAsync() {
+            await Console.Out.WriteLineAsync("Starting ctOS_Moderation Discord Bot...");
 
-            _service = new ServiceCollection()
-                .AddSingleton(_client)
-                .AddSingleton(_commands)
-                .BuildServiceProvider();
+            var builder = new ConfigurationBuilder()
+                .SetBasePath(AppContext.BaseDirectory)
+                .AddJsonFile("config.json");
+            _config = builder.Build();
 
-            string botToken = File.ReadAllText(Path.Combine(Path.GetDirectoryName(Assembly.GetEntryAssembly().Location), "Token"));
+            var service = new ServiceCollection()
+                .AddSingleton(new DiscordSocketClient(new DiscordSocketConfig {
+                    LogLevel = Discord.LogSeverity.Error,
+                    MessageCacheSize = 50
+                }))
+                .AddSingleton(new CommandService(new CommandServiceConfig {
+                    DefaultRunMode = RunMode.Async
+                }))
+                .AddSingleton<StartupService>()
+                .AddSingleton<LogService>()
+                .AddSingleton<CommandHandler>()
+                .AddSingleton(_config);
 
-            _client.Log += Log;
+            var provider = service.BuildServiceProvider();
 
-            await RegisterCommandsAsync();
+            provider.GetRequiredService<LogService>();
+            await provider.GetRequiredService<StartupService>().StartupAsync();
+            provider.GetRequiredService<CommandHandler>();
 
-            await _client.LoginAsync(TokenType.Bot, botToken);
-
-            await _client.StartAsync();
-
-            await _client.SetGameAsync("cm.help");
-
-            await Task.Delay(3000);
-            Console.WriteLine("");
+            await Console.Out.WriteLineAsync("ctOS_Moderation Bot Started!\n");
 
             await Task.Delay(-1);
-        }
-
-        public Task Log(LogMessage arg) {
-            Console.WriteLine(arg);
-
-            return Task.CompletedTask;
-        }
-
-        public async Task RegisterCommandsAsync() {
-            _client.MessageReceived += HandleCommandAsync;
-
-            await _commands.AddModulesAsync(Assembly.GetEntryAssembly());
-        }
-
-        public async Task HandleCommandAsync(SocketMessage s) {
-            SocketUserMessage message = s as SocketUserMessage;
-            if (message == null || message.Author.IsBot) return;
-
-            int argPos = 0;
-            if ((message.HasStringPrefix(StaticValues.GetGuildPrefix(new SocketCommandContext(_client, message).Guild.Id), ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.ToString() == "cm.prefix") && !(new SocketCommandContext(_client, message).IsPrivate)) {
-                var context = new SocketCommandContext(_client, message);
-                IResult result;
-
-                if (message.ToString() == "cm.prefix" && message.HasStringPrefix("cm.", ref argPos))
-                    result = await _commands.ExecuteAsync(context, argPos, _service);
-                else
-                    result = await _commands.ExecuteAsync(context, argPos, _service);
-
-
-
-                if (!result.IsSuccess) {
-                    await context.Channel.SendMessageAsync(result.ErrorReason);
-                    if (result.Error != CommandError.UnknownCommand && result.Error != CommandError.BadArgCount && result.Error != CommandError.ObjectNotFound)
-                        Console.WriteLine(result.ErrorReason + "\n");
-                }
-            }
         }
     }
 }
