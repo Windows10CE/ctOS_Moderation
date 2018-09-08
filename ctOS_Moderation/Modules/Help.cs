@@ -24,6 +24,7 @@ namespace ctOS_Moderation.Modules {
                 .WithColor(Color.DarkBlue);
 
             await Context.User.SendMessageAsync("", false, builder.Build());
+            await ReplyAsync("I sent you all my commands!");
         }
     }
 }

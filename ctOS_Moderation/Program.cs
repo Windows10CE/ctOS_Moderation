@@ -30,7 +30,9 @@ namespace ctOS_Moderation
 
         public async Task RunBotAsync() {
             _client = new DiscordSocketClient();
-            _commands = new CommandService();
+            _commands = new CommandService(new CommandServiceConfig() {
+                DefaultRunMode = RunMode.Async
+            });
 
             _service = new ServiceCollection()
                 .AddSingleton(_client)
@@ -72,7 +74,7 @@ namespace ctOS_Moderation
             if (message == null || message.Author.IsBot) return;
 
             int argPos = 0;
-            if ((message.HasStringPrefix(StaticValues.GetServerPrefix(new SocketCommandContext(_client, message).Guild.Id), ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.ToString() == "cm.prefix") && !(new SocketCommandContext(_client, message).IsPrivate)) {
+            if ((message.HasStringPrefix(StaticValues.GetGuildPrefix(new SocketCommandContext(_client, message).Guild.Id), ref argPos) || message.HasMentionPrefix(_client.CurrentUser, ref argPos) || message.ToString() == "cm.prefix") && !(new SocketCommandContext(_client, message).IsPrivate)) {
                 var context = new SocketCommandContext(_client, message);
                 IResult result;
 

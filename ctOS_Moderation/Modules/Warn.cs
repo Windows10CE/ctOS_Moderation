@@ -5,6 +5,7 @@ using Newtonsoft.Json.Linq;
 using System.IO;
 using System.Threading.Tasks;
 using ctOS_Moderation.Modules.Preconditions;
+using System;
 
 namespace ctOS_Moderation.Modules {
     public class Warn : ModuleBase<SocketCommandContext>
@@ -37,6 +38,13 @@ namespace ctOS_Moderation.Modules {
             await ReplyAsync("", false, builderEnvoker.Build());
             var userToDM = userToWarn as IUser;
             await UserExtensions.SendMessageAsync(userToDM, "You have been warned.", false, builderDM.Build());
+
+            var embed = builderEnvoker
+                .WithTitle("Log Message: Warning")
+                .WithTimestamp(DateTimeOffset.UtcNow)
+                .Build();
+
+            await Context.Guild.SendGuildLogMessageAsync(embed);
         }
     }
 }

@@ -39,8 +39,7 @@ namespace ctOS_Moderation.Modules
                     return keyValuePair.Value.ToString();
                 }
             }
-            Console.WriteLine($"Error, no key found for {key}");
-            return String.Empty;
+            throw new ArgumentNullException(key, "Key wasn't found in JSON Object.");
         }
     }
 }

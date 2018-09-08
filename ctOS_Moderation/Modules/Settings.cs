@@ -1,24 +1,18 @@
 ﻿using Discord;
 using Discord.Commands;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Discord.WebSocket;
 using System.IO;
 using Newtonsoft.Json.Linq;
-using static ctOS_Moderation.Modules.JSONHelper;
 using System.Threading.Tasks;
 
 namespace ctOS_Moderation.Modules {
+    [Group("settings"), RequireUserPermission(GuildPermission.ManageGuild)]
     public class Prefix : ModuleBase<SocketCommandContext> {
         [Command("prefix")]
         public async Task SetPrefixAsync([Remainder] string prefix = "printprefix") {
-            string currentPrefix = StaticValues.GetServerPrefix(Context.Guild.Id);
+            string currentPrefix = StaticValues.GetGuildPrefix(Context.Guild.Id);
             if (prefix == "printprefix") {
                 await ReplyAsync($"The prefix is \"{currentPrefix}\"");
-                return;
-            }
-            if (!(Context.User as IGuildUser).GuildPermissions.ManageGuild) {
-                await ReplyAsync("This command requires the Manage Server permission.");
                 return;
             }
             if (prefix == currentPrefix) {
@@ -36,6 +30,26 @@ namespace ctOS_Moderation.Modules {
 
             File.WriteAllText(configFile, config.ToString());
             await ReplyAsync($"The prefix has been set to \"{prefix}\"!");
+        }
+
+        [Command("logchannel")]
+        public async Task SetLogChannelAsync(SocketTextChannel channel) {
+            var (channelID, enabled) = StaticValues.GuildLogChannel(Context.Guild.Id);
+            if (channelID == channel.Id) {
+                await ReplyAsync("That is already the log channel!");
+                return;
+            }
+
+            string filepath = Path.Combine(StaticValues.ServerSettingsDir, Context.Guild.Id + ".json");
+            var json = File.Exists(filepath) ? JObject.Parse(File.ReadAllText(filepath)) : StaticValues.DefaultConfigFile;
+
+            json["logchannel"] = new JObject(
+                new JProperty("enabled", true),
+                new JProperty("channelID", channel.Id));
+
+            File.WriteAllText(filepath, json.ToString());
+
+            await ReplyAsync($"Log Channel changed to {channel.Mention}!");
         }
     }
 }
