@@ -1,19 +1,22 @@
-﻿using Discord.Commands;
+﻿using ctOS_Moderation.Services;
+using Discord.Commands;
 using Discord.WebSocket;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.IO;
 using System.Threading.Tasks;
-using ctOS_Moderation.Services;
 
 namespace ctOS_Moderation
 {
     class Program
     {
-        static void Main(string[] args) {
-            if (!Directory.Exists(StaticValues.WarningsDir)) {
-                if (!Directory.Exists(StaticValues.CTOSModDir)) {
+        static void Main(string[] args)
+        {
+            if (!Directory.Exists(StaticValues.WarningsDir))
+            {
+                if (!Directory.Exists(StaticValues.CTOSModDir))
+                {
                     Directory.CreateDirectory(StaticValues.CTOSModDir);
                 }
                 Directory.CreateDirectory(StaticValues.WarningsDir);
@@ -26,7 +29,8 @@ namespace ctOS_Moderation
 
         private IConfigurationRoot _config;
 
-        public async Task StartupAsync() {
+        public async Task StartupAsync()
+        {
             await Console.Out.WriteLineAsync("Starting ctOS_Moderation Discord Bot...");
 
             var builder = new ConfigurationBuilder()
@@ -35,11 +39,13 @@ namespace ctOS_Moderation
             _config = builder.Build();
 
             var service = new ServiceCollection()
-                .AddSingleton(new DiscordSocketClient(new DiscordSocketConfig {
+                .AddSingleton(new DiscordSocketClient(new DiscordSocketConfig
+                {
                     LogLevel = Discord.LogSeverity.Error,
                     MessageCacheSize = 50
                 }))
-                .AddSingleton(new CommandService(new CommandServiceConfig {
+                .AddSingleton(new CommandService(new CommandServiceConfig
+                {
                     DefaultRunMode = RunMode.Async
                 }))
                 .AddSingleton<StartupService>()
